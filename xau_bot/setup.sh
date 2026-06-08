@@ -71,11 +71,14 @@ STOPSCRIPT
 
 chmod +x "$SCRIPT_DIR/stop_bot.sh"
 
-# ── 5. Auto-start on reboot via cron ─────────────────────────────────────────
-CRON_JOB="@reboot $SCRIPT_DIR/start_bot.sh >> $SCRIPT_DIR/xau_bot.log 2>&1"
-# Remove old entry if exists, then add fresh
-( crontab -l 2>/dev/null | grep -v "start_bot.sh" ; echo "$CRON_JOB" ) | crontab -
-echo "✓ Auto-start on reboot configured (cron @reboot)"
+# ── 5. Auto-start on reboot via cron (skip if crontab unavailable) ───────────
+if command -v crontab &>/dev/null; then
+    CRON_JOB="@reboot $SCRIPT_DIR/start_bot.sh >> $SCRIPT_DIR/xau_bot.log 2>&1"
+    ( crontab -l 2>/dev/null | grep -v "start_bot.sh" ; echo "$CRON_JOB" ) | crontab -
+    echo "✓ Auto-start on reboot configured (cron @reboot)"
+else
+    echo "⚠ crontab not available — bot won't auto-start on reboot (run ./start_bot.sh manually)"
+fi
 
 # ── 6. Start now ─────────────────────────────────────────────────────────────
 echo ""
